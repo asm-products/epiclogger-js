@@ -55,13 +55,15 @@ window.widgetLoader = ((window,document) ->
   loadModule= (e)->
     info_received = JSON.parse(e.data)
     window.ELopts.widget_url = info_received.url
+    ###
     window.ELopts.domain = window.ELopts.widget_domain
     window.ELopts.domain = info_received.domain if info_received.domain!=undefined
 
     if isMobile()
       window.open(window.ELopts.domain+"?id="+window.ELopts.widget_url,'_blank')
     else
-      openModal()
+    ###  
+    openModal()
 
   # ---- openModal Method
   # -- we use this method to initialize the modal and add the iframe to it
@@ -75,7 +77,58 @@ window.widgetLoader = ((window,document) ->
     outerHeight= if typeof widget_height=="number" then current_height-widget_height else (current_height*parseInt(widget_height)/100)
 
     picoModal(
-      content: '<iframe id="WDG_widgetIframe" src="'+ window.ELopts.domain+"?id="+window.ELopts.widget_url+'" class="iframe-class" style="width:100%;height:100%;" frameborder="0" allowtransparency="true"></iframe>'
+      content: '<!-- Latest compiled and minified CSS -->
+<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css\">
+<style>
+.form-control-feedback {
+position: relative;
+display: inline;
+top: 0;
+line-height: 14px;
+}
+</style>
+
+<!-- Optional theme -->
+<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css\">
+<div class=\"container\">
+<p class=\"margin-bottom-30\">
+<strong>
+We are sorry that you landed on this error page.
+</strong>
+</p>
+<p>
+<strong>
+Let us know and we will get back to you once we fix the issue.
+</strong>
+</p>
+<div class=\"row\">
+  <div class=\"col-lg-6\">
+    <div id=\"contact-response\"></div>
+  </div>
+</div>
+<div class=\"row\">
+  <form role=\"form\" onsubmit=\"return reporterror(this)\" id=\"contact-form\">
+    <div class=\"col-lg-6\">
+      <div class=\"well well-sm\"><strong><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i> Required Field</strong></div>
+      <div class=\"form-group\">
+        <label for=\"InputEmail\">Your Email</label>
+        <div class=\"input-group\">
+          <input type=\"email\" class=\"form-control\" id=\"InputEmail\" name=\"InputEmail\" placeholder=\"Enter Email\" required  >
+          <span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i></span></div>
+      </div>
+      <div class=\"form-group\">
+        <label for=\"InputMessage\">Details/Notes on the Error (What were you trying to do?)</label>
+        <div class=\"input-group\">
+          <textarea name=\"InputMessage\" id=\"InputMessage\" class=\"form-control\" rows=\"5\" required></textarea>
+          <span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i></span></div>
+      </div>
+      <button type=\"submit\" name=\"submit\" id=\"btn-submit\" value=\"Submit\" class=\"btn btn-info pull-right\">Submit Error</button>
+    </div>
+  </form>
+</div>
+</div>
+'
+      #content: '<iframe id="WDG_widgetIframe" src="'+ window.ELopts.domain+"?id="+window.ELopts.widget_url+'" class="iframe-class" style="width:100%;height:100%;" frameborder="0" allowtransparency="true"></iframe>'
       overlayStyles:
         backgroundColor: "#333"
         opacity: "0.3"
@@ -245,9 +298,35 @@ window.widgetLoader = ((window,document) ->
 
 )(window,document)
 
-
 window.onload = ()->
   if _lopts.widget_container is undefined
     _lopts.widget_container = 'body'
   widgetLoader(_lopts)
 
+window.reporterror = (formObj) ->
+
+  onSubmitComplete = (error) ->
+    contactForm = document.getElementById('contact-form')
+    contactResponse = document.getElementById('contact-response')
+    contactBtn = document.getElementById('btn-submit')
+    contactBtn.disabled = false
+    if error
+      contactResponse.innerHTML = '<div class="alert alert-danger">Sorry. Could not submit the error report.</div>'
+    else
+      contactResponse.innerHTML = '<div class="alert alert-success">Thanks for submitting your error report!</div>'
+      contactForm.style.display = 'none'
+    return
+
+  contactBtn = document.getElementById('btn-submit')
+  myFirebaseRef = new Firebase('https://epiclogger.firebaseio.com/errors')
+  id = window.ELopts.widget_url
+  currentdate = new Date
+  datetime = currentdate.getDate() + '/' + currentdate.getMonth() + 1 + '/' + currentdate.getFullYear() + ' @ ' + currentdate.getHours() + ':' + currentdate.getMinutes() + ':' + currentdate.getSeconds()
+  myFirebaseRef.push {
+    'id': id
+    'email': formObj.InputEmail.value
+    'notes': formObj.InputMessage.value
+    'timestamp': datetime
+  }, onSubmitComplete
+  contactBtn.disabled = true
+  false

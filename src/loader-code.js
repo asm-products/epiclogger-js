@@ -61,15 +61,16 @@ A self-contained loader library
       var info_received;
       info_received = JSON.parse(e.data);
       window.ELopts.widget_url = info_received.url;
-      window.ELopts.domain = window.ELopts.widget_domain;
-      if (info_received.domain !== void 0) {
-        window.ELopts.domain = info_received.domain;
-      }
-      if (isMobile()) {
-        return window.open(window.ELopts.domain + "?id=" + window.ELopts.widget_url, '_blank');
-      } else {
-        return openModal();
-      }
+
+      /*
+      window.ELopts.domain = window.ELopts.widget_domain
+      window.ELopts.domain = info_received.domain if info_received.domain!=undefined
+      
+      if isMobile()
+        window.open(window.ELopts.domain+"?id="+window.ELopts.widget_url,'_blank')
+      else
+       */
+      return openModal();
     };
     openModal = function() {
       var current_height, current_width, outerHeight, outerWidth, widget_height, widget_width;
@@ -80,7 +81,7 @@ A self-contained loader library
       outerWidth = typeof widget_width === "number" ? current_width - widget_width : current_width * parseInt(widget_width) / 100;
       outerHeight = typeof widget_height === "number" ? current_height - widget_height : current_height * parseInt(widget_height) / 100;
       return picoModal({
-        content: '<iframe id="WDG_widgetIframe" src="' + window.ELopts.domain + "?id=" + window.ELopts.widget_url + '" class="iframe-class" style="width:100%;height:100%;" frameborder="0" allowtransparency="true"></iframe>',
+        content: '<!-- Latest compiled and minified CSS --> <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css\"> <style> .form-control-feedback { position: relative; display: inline; top: 0; line-height: 14px; } </style> <!-- Optional theme --> <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css\"> <div class=\"container\"> <p class=\"margin-bottom-30\"> <strong> We are sorry that you landed on this error page. </strong> </p> <p> <strong> Let us know and we will get back to you once we fix the issue. </strong> </p> <div class=\"row\"> <div class=\"col-lg-6\"> <div id=\"contact-response\"></div> </div> </div> <div class=\"row\"> <form role=\"form\" onsubmit=\"return reporterror(this)\" id=\"contact-form\"> <div class=\"col-lg-6\"> <div class=\"well well-sm\"><strong><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i> Required Field</strong></div> <div class=\"form-group\"> <label for=\"InputEmail\">Your Email</label> <div class=\"input-group\"> <input type=\"email\" class=\"form-control\" id=\"InputEmail\" name=\"InputEmail\" placeholder=\"Enter Email\" required  > <span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i></span></div> </div> <div class=\"form-group\"> <label for=\"InputMessage\">Details/Notes on the Error (What were you trying to do?)</label> <div class=\"input-group\"> <textarea name=\"InputMessage\" id=\"InputMessage\" class=\"form-control\" rows=\"5\" required></textarea> <span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i></span></div> </div> <button type=\"submit\" name=\"submit\" id=\"btn-submit\" value=\"Submit\" class=\"btn btn-info pull-right\">Submit Error</button> </div> </form> </div> </div>',
         overlayStyles: {
           backgroundColor: "#333",
           opacity: "0.3"
@@ -291,6 +292,36 @@ A self-contained loader library
       _lopts.widget_container = 'body';
     }
     return widgetLoader(_lopts);
+  };
+
+  window.reporterror = function(formObj) {
+    var contactBtn, currentdate, datetime, id, myFirebaseRef, onSubmitComplete;
+    onSubmitComplete = function(error) {
+      var contactBtn, contactForm, contactResponse;
+      contactForm = document.getElementById('contact-form');
+      contactResponse = document.getElementById('contact-response');
+      contactBtn = document.getElementById('btn-submit');
+      contactBtn.disabled = false;
+      if (error) {
+        contactResponse.innerHTML = '<div class="alert alert-danger">Sorry. Could not submit the error report.</div>';
+      } else {
+        contactResponse.innerHTML = '<div class="alert alert-success">Thanks for submitting your error report!</div>';
+        contactForm.style.display = 'none';
+      }
+    };
+    contactBtn = document.getElementById('btn-submit');
+    myFirebaseRef = new Firebase('https://epiclogger.firebaseio.com/errors');
+    id = window.ELopts.widget_url;
+    currentdate = new Date;
+    datetime = currentdate.getDate() + '/' + currentdate.getMonth() + 1 + '/' + currentdate.getFullYear() + ' @ ' + currentdate.getHours() + ':' + currentdate.getMinutes() + ':' + currentdate.getSeconds();
+    myFirebaseRef.push({
+      'id': id,
+      'email': formObj.InputEmail.value,
+      'notes': formObj.InputMessage.value,
+      'timestamp': datetime
+    }, onSubmitComplete);
+    contactBtn.disabled = true;
+    return false;
   };
 
 }).call(this);
