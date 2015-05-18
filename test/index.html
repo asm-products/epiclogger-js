@@ -38,7 +38,7 @@
 </script>
  -->
 <!-- Firebase is only to test Posting data-->
- <script src="https://cdn.firebase.com/js/client/2.2.3/firebase.js"></script>
+ <script src="http://cdn.firebase.com/js/client/2.2.3/firebase.js"></script>
 
 	<script type="text/javascript">
     var _lopts = _lopts || [];
@@ -52,12 +52,12 @@
         _lopts.side_btn         = true;
         // _lopts.iframe_widget    = true;
 
-    var local_script = "localhost:8000/loader.min.js";
-    var s3_script    = "d1u2f2r665j4oh.cloudfront.net/loader-v2.1.js";
+    //var local_script = "localhost:8000/loader.min.js";
 
     (function() {
         var loader = document.createElement('script'); loader.type = 'text/javascript'; loader.async = true;
-        loader.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + local_script;
+        //loader.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + local_script;
+        loader.src = '../src/loader.min.js';
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(loader, s);
     })();
   </script>       
