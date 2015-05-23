@@ -103,13 +103,15 @@ window.picoModal = ((window, document) ->
           elem.attachEvent "onclick", callback
         else
           elem.addEventListener "click", callback
+        document.getElementById('iframe_widget').style["z-index"] = 99999 if window.ELopts.iframe_widget
         iface
 
       
       # Removes this element from the DOM
       destroy: ->
-        document.body.removeChild elem
-        iface
+        (parent or document.body).removeChild elem
+        document.getElementById('iframe_widget').style["z-index"] = -1 if window.ELopts.iframe_widget
+        iface 
 
     iface
 
@@ -121,7 +123,7 @@ window.picoModal = ((window, document) ->
     clickCallbacks = observable()
     
     # The overlay element
-    elem = make().clazz("pico-overlay").stylize(
+    elem = make(document.getElementById('iframe_widget').contentWindow.document.body if window.ELopts.iframe_widget).clazz('pico-overlay').stylize(
       display: "block"
       position: "fixed"
       top: "0px"
@@ -148,7 +150,7 @@ window.picoModal = ((window, document) ->
     options = content: options  if typeof options is "string"
     shadow = overlay(getOption)
     closeCallbacks = observable()
-    elem = make().clazz("pico-content").stylize(
+    elem = make(document.getElementById('iframe_widget').contentWindow.document.body if window.ELopts.iframe_widget).clazz("pico-content").stylize(
       display: "block"
       position: "fixed"
       zIndex: 10001

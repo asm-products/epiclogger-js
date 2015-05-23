@@ -42,15 +42,17 @@
 
 	<script type="text/javascript">
     var _lopts = _lopts || [];
-        //_lopts.widget_domain    = "//localhost:8000/contact.html"
-        _lopts.widget_url       = "1213";
+        _lopts.widget_domain    = "//localhost:8000/contact.html"; //the domain for where to send the data
+        _lopts.widget_url       = "1213";  //the id of the user in their application
+        _lopts.email = "rabotse@gmail.com";
         // _lopts.theme            = "light";
         _lopts.modal_width      = "41%";
-        _lopts.modal_height     = 400;
-        // _lopts.widget_container = "#side_widget";
+        _lopts.modal_height     = 532;
+        //_lopts.widget_container = "#iframe_widget";
         _lopts.custom_widget    = true;
         _lopts.side_btn         = true;
-        // _lopts.iframe_widget    = true;
+        _lopts.iframe_widget    = true;
+
 
     //var local_script = "localhost:8000/loader.min.js";
 
@@ -58,7 +60,8 @@
         var loader = document.createElement('script'); loader.type = 'text/javascript'; loader.async = true;
         //loader.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + local_script;
         loader.src = '../src/loader.min.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(loader, s);
+        var s = document.getElementsByTagName('script')[0]; 
+        s.parentNode.insertBefore(loader, s);
     })();
   </script>       
 
