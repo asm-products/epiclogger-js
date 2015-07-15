@@ -104,10 +104,16 @@ A self-contained modal library
           } else {
             elem.addEventListener("click", callback);
           }
+          if (window.ELopts.iframe_widget) {
+            document.getElementById('iframe_widget').style["z-index"] = 99999;
+          }
           return iface;
         },
         destroy: function() {
-          document.body.removeChild(elem);
+          (parent || document.body).removeChild(elem);
+          if (window.ELopts.iframe_widget) {
+            document.getElementById('iframe_widget').style["z-index"] = -1;
+          }
           return iface;
         }
       };
@@ -116,7 +122,7 @@ A self-contained modal library
     overlay = function(getOption) {
       var clickCallbacks, elem;
       clickCallbacks = observable();
-      elem = make().clazz("pico-overlay").stylize({
+      elem = make(window.ELopts.iframe_widget ? document.getElementById('iframe_widget').contentWindow.document.body : void 0).clazz('pico-overlay').stylize({
         display: "block",
         position: "fixed",
         top: "0px",
@@ -150,7 +156,7 @@ A self-contained modal library
       }
       shadow = overlay(getOption);
       closeCallbacks = observable();
-      elem = make().clazz("pico-content").stylize({
+      elem = make(window.ELopts.iframe_widget ? document.getElementById('iframe_widget').contentWindow.document.body : void 0).clazz("pico-content").stylize({
         display: "block",
         position: "fixed",
         zIndex: 10001,

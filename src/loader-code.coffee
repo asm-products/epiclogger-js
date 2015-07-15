@@ -13,12 +13,14 @@ window.widgetLoader = ((window,document) ->
   defaults=
     widget_domain:  '//location.for.iframe.widget' # the contact form to load
     domain:         '//domain.for.iframe.widget'
+    email:   false
     modal_width:    false
     modal_height:   false
     iframe_widget:  false
     iframe_width:   "100%"
     iframe_height:  "100%"
     side_btn:       true 
+    
 
   cssNumber=
     "columnCount": true,
@@ -48,6 +50,7 @@ window.widgetLoader = ((window,document) ->
       moduleInfo = JSON.stringify({url:widget_token})
       loadModule({data:moduleInfo})
 
+
   # ---- loadModule Method
   # -- we use this method as a way to verify if we need to open a new window or a modal
   # -- depending by the browser type. This is also called by the iframe in case of displaying
@@ -64,7 +67,7 @@ window.widgetLoader = ((window,document) ->
     else
     ###  
     openModal()
-
+    return
   # ---- openModal Method
   # -- we use this method to initialize the modal and add the iframe to it
   openModal= ()->
@@ -72,77 +75,408 @@ window.widgetLoader = ((window,document) ->
     current_width = make().getWindow('width')
     widget_width = if window.ELopts.modal_width then window.ELopts.modal_width else current_width/1.2
     widget_height = if window.ELopts.modal_height then window.ELopts.modal_height else current_height/1.6
-
+    emailAddress = if window.ELopts.email then window.ELopts.email else ''
     outerWidth = if typeof widget_width=="number" then current_width-widget_width else (current_width*parseInt(widget_width)/100)
     outerHeight= if typeof widget_height=="number" then current_height-widget_height else (current_height*parseInt(widget_height)/100)
-
     picoModal(
-      content: '<!-- Latest compiled and minified CSS -->
-<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css\">
-<style>
-.form-control-feedback {
-position: relative;
-display: inline;
-top: 0;
-line-height: 14px;
-}
-</style>
+      content: """
+      <style>
+        /**/
+        /* normal state */
+        /**/
+        .epic-form .button {
+          background-color: #cc3d3d;
+        }
 
-<!-- Optional theme -->
-<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css\">
-<div class=\"container\">
-<p class=\"margin-bottom-30\">
-<strong>
-We are sorry that you landed on this error page.
-</strong>
-</p>
-<p>
-<strong>
-Let us know and we will get back to you once we fix the issue.
-</strong>
-</p>
-<div class=\"row\">
-  <div class=\"col-lg-6\">
-    <div id=\"contact-response\"></div>
-  </div>
-</div>
-<div class=\"row\">
-  <form role=\"form\" onsubmit=\"return reporterror(this)\" id=\"contact-form\">
-    <div class=\"col-lg-6\">
-      <div class=\"well well-sm\"><strong><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i> Required Field</strong></div>
-      <div class=\"form-group\">
-        <label for=\"InputEmail\">Your Email</label>
-        <div class=\"input-group\">
-          <input type=\"email\" class=\"form-control\" id=\"InputEmail\" name=\"InputEmail\" placeholder=\"Enter Email\" required  >
-          <span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i></span></div>
-      </div>
-      <div class=\"form-group\">
-        <label for=\"InputMessage\">Details/Notes on the Error (What were you trying to do?)</label>
-        <div class=\"input-group\">
-          <textarea name=\"InputMessage\" id=\"InputMessage\" class=\"form-control\" rows=\"5\" required></textarea>
-          <span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-ok form-control-feedback\"></i></span></div>
-      </div>
-      <button type=\"submit\" name=\"submit\" id=\"btn-submit\" value=\"Submit\" class=\"btn btn-info pull-right\">Submit Error</button>
-    </div>
-  </form>
-</div>
-</div>
-'
-      #content: '<iframe id="WDG_widgetIframe" src="'+ window.ELopts.domain+"?id="+window.ELopts.widget_url+'" class="iframe-class" style="width:100%;height:100%;" frameborder="0" allowtransparency="true"></iframe>'
+
+        /**/
+        /* hover state */
+        /**/
+        .epic-form .input:hover input,
+        .epic-form .textarea:hover textarea {
+          border-color: #dc9596;
+        }
+
+        /**/
+        /* focus state */
+        /**/
+        .epic-form .input input:focus,
+        .epic-form .textarea textarea:focus { 
+          border-color: #cc3d3d;
+        }
+
+        /**/
+        /* font */
+        /**/
+        @import url(http://fonts.googleapis.com/css?family=Open+Sans:300,400,700);
+
+
+        /**/
+        /* defaults */
+        /**/
+        .epic-form {
+          margin: 0;
+          outline: none;
+          box-shadow: 0 0 20px rgba(0,0,0,.3);
+          font: 13px/1.55 'Open Sans', Helvetica, Arial, sans-serif;
+          color: #666;
+        }
+        .epic-form * {
+          margin: 0;
+          padding: 0;
+        }
+        .epic-form header {
+          display: block;
+          padding: 20px 30px; 
+          border-bottom: 1px solid rgba(0,0,0,.1);
+          background: rgba(248,248,248,.9);
+          font-size: 25px;
+          font-weight: 300;
+          color: #232323;
+        }
+        .epic-form fieldset {
+          display: block; 
+          padding: 25px 30px 5px;
+          border: none;
+          background: rgba(255,255,255,.9);
+        }
+        .epic-form fieldset + fieldset {
+          border-top: 1px solid rgba(0,0,0,.1);
+        }
+        .epic-form section {
+          margin-bottom: 20px;
+        }
+        .epic-form footer {
+          display: block;
+          padding: 15px 30px 25px;
+          border-top: 1px solid rgba(0,0,0,.1);
+          background: rgba(248,248,248,.9);
+        }
+        .epic-form footer:after {
+          content: '';
+          display: table;
+          clear: both;
+        }
+        .epic-form a {
+          color: #2da5da;
+        }
+        .epic-form .label {
+          display: block;
+          margin-bottom: 6px;
+          line-height: 19px;
+        }
+        .epic-form .label.col {
+          margin: 0;
+          padding-top: 10px;
+        }
+
+        .epic-form .input,
+        .epic-form .textarea,
+        .epic-form .button {
+          position: relative;
+          display: block;
+        }
+        .epic-form .input input,
+        .epic-form .textarea textarea {
+          display: block;
+          box-sizing: border-box;
+          -moz-box-sizing: border-box;
+          width: 100%;
+          height: 39px;
+          padding: 8px 10px;
+          outline: none;
+          border-width: 2px;
+          border-style: solid;
+          border-radius: 0;
+          background: #fff;
+          font: 15px/19px 'Open Sans', Helvetica, Arial, sans-serif;
+          color: #404040;
+          appearance: normal;
+          -moz-appearance: none;
+          -webkit-appearance: none;
+        }
+
+        /**/
+        /* textareas */
+        /**/
+        .epic-form .textarea textarea {
+          height: auto;
+          resize: none;
+        }
+        .epic-form .textarea-resizable textarea {
+          resize: vertical; 
+        }
+        .epic-form .textarea-expandable textarea {
+          height: 39px;
+        }
+        .epic-form .textarea-expandable textarea:focus {
+          height: auto;
+        }
+
+        /**/
+        /* buttons */
+        /**/
+        .epic-form .button {
+          float: right;
+          height: 39px;
+          overflow: hidden;
+          margin: 10px 0 0 20px;
+          padding: 0 25px;
+          outline: none;
+          border: 0;
+          font: 300 15px/39px 'Open Sans', Helvetica, Arial, sans-serif;
+          text-decoration: none;
+          color: #fff;
+          cursor: pointer;
+        }
+
+        /**/
+        /* grid */
+        /**/
+        .epic-form .row {
+          margin: 0 -15px;
+        }
+        .epic-form .row:after {
+          content: '';
+          display: table;
+          clear: both;
+        }
+        .epic-form .col {
+          float: left;
+          min-height: 1px;
+          padding-right: 15px;
+          padding-left: 15px;
+          box-sizing: border-box;
+          -moz-box-sizing: border-box;
+        }
+        .epic-form .col-1 {
+          width: 8.33%;
+        }
+        .epic-form .col-2 {
+          width: 16.66%;
+        }
+        .epic-form .col-3 {
+          width: 25%;
+        }
+        .epic-form .col-4 {
+          width: 33.33%;
+        }
+        .epic-form .col-5 {
+          width: 41.66%;
+        }
+        .epic-form .col-6 {
+          width: 50%;
+        }
+        .epic-form .col-8 {
+          width: 66.67%;
+        }
+        .epic-form .col-9 {
+          width: 75%;
+        }
+        .epic-form .col-10 {
+          width: 83.33%;
+        }
+        @media screen and (max-width: 600px) {
+          .epic-form .col {
+            float: none;
+            width: 100%;
+          }
+        }
+
+        /**/
+        /* normal state */
+        /**/
+        .epic-form .input input,
+        .epic-form .textarea textarea {
+          border-color: #e5e5e5;
+          transition: border-color 0.3s;
+          -o-transition: border-color 0.3s;
+          -ms-transition: border-color 0.3s;
+          -moz-transition: border-color 0.3s;
+          -webkit-transition: border-color 0.3s;
+        }
+      
+        .epic-form .button {
+          background-color: #2da5da;
+          opacity: 0.8;
+          transition: opacity 0.2s;
+          -o-transition: opacity 0.2s;
+          -ms-transition: opacity 0.2s;
+          -moz-transition: opacity 0.2s;
+          -webkit-transition: opacity 0.2s;
+        }
+        .epic-form .button.button-secondary {
+          background-color: #b3b3b3;
+        }
+
+        /**/
+        /* hover state */
+        /**/
+        .epic-form .input:hover input,
+        .epic-form .textarea:hover textarea {
+          border-color: #8dc9e5;
+        }
+        
+        .epic-form .button:hover {
+          opacity: 1;
+        }
+
+
+        /**/
+        /* focus state */
+        /**/
+        .epic-form .input input:focus,
+        .epic-form .textarea textarea:focus {
+          border-color: #2da5da;
+        }
+
+        /**/
+        /* error state */
+        /**/
+        .epic-form .state-error input,
+        .epic-form .state-error textarea{
+          background: #fff0f0;
+        }
+        
+        .epic-form .toggle.state-error input:checked + i {
+          background: #fff0f0;
+        }
+        .epic-form .state-error{
+          color: #B82222;
+        }
+      
+        /**/
+        /* success state */
+        /**/
+        .epic-form .state-success input,
+        .epic-form .state-success textarea {
+          background: #f0fff0;
+        }
+        .epic-form .state-success {
+          color: #6fb679;
+        }
+
+
+        /**/
+        /* disabled state */
+        /**/
+        .epic-form .input.state-disabled input,
+        .epic-form .textarea.state-disabled,
+        .epic-form .button.state-disabled {
+          cursor: default;
+          opacity: 0.5;
+        }
+        .epic-form .input.state-disabled:hover input,
+        .epic-form .textarea.state-disabled:hover textarea {
+          border-color: #e5e5e5;
+        }
+
+
+        /**/
+        /* submited state */
+        /**/
+        .epic-form .message {
+          display: none;
+          color: #6fb679;
+        }
+        .epic-form .message i {
+          display: block;
+          margin: 0 auto 20px;
+          width: 81px;
+          height: 81px;
+          border: 1px solid #6fb679;
+          border-radius: 50%;
+          font-size: 30px;
+          line-height: 81px;
+        }
+        .epic-form.submited .message {
+          display: block;
+          padding: 10px 30px 25px;
+          background: rgba(255,255,255,.9);
+          font: 300 18px/27px 'Open Sans', Helvetica, Arial, sans-serif;
+          text-align: center;
+        }
+
+        /**/
+        /* modal */
+        /**/
+        .epic-form-modal {
+          position: fixed;
+          z-index: 1;
+          display: none;
+          width: 400px;
+        }
+        .epic-form-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          display: none;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.7);
+        }
+        html, body {
+          margin: 0;
+          padding: 0;
+          background-attachment: fixed;
+          background-position: 50% 50%;
+          background-size: cover;
+        }
+        .modal {
+          padding: 25px 30px;
+          background: rgba(255,255,255,0.9);
+          font: 13px/1.55 'Open Sans', Helvetica, Arial, sans-serif;
+          color: #666;
+        }
+        .modal a {
+          color: #2da5da;
+        }
+
+        @media screen and (max-width: 600px) {
+          .body {
+            padding: 20px;
+          }
+        }
+      </style>
+      <div class="body">      
+        <form action="" class="epic-form" id="contact-form">
+          <header>We are sorry that you landed on this error page.
+            Let us know and we will get back to you once we fix the issue.</header>
+          <fieldset>
+            <section>
+              <label class="label" for="InputEmail">Your Email</label>
+              <label class="input">
+                <input type="email" id="InputEmail" name="InputEmail" placeholder="Enter your email" value="#{emailAddress}" required/>
+            </section>
+          </fieldset>
+          <fieldset>          
+            <section>
+              <label class="label" for="InputMessage">Details/Notes on the Error (What were you trying to do?)</label>
+              <label class="textarea">
+                <textarea rows="4" name="InputMessage" id="InputMessage"></textarea>
+              </label>
+            </section>
+          </fieldset>
+          <div id="contact-response" class="message"></div>
+          <footer>
+            <button type="submit" class="button" id="btn-submit">Submit Error</button>
+          </footer>
+        </form>
+      </div>"""
       overlayStyles:
         backgroundColor: "#333"
         opacity: "0.3"
       modalStyles: 
         width: widget_width
         height: widget_height
-        top: "20%"
+        top: "13%"
         background: "#fff"
         boxShadow: "0px 0px 7px #444"
         border: "1px solid #444"
         borderRadius: "3px"
         marginLeft: -outerWidth/2+"px"
+        overflowY: "scroll"
     )
-   
   # ---- addSideButton Method
   # -- we add a fixed side button that has a click event on it for opening the widget
   addSideButton= ()->
@@ -150,15 +484,15 @@ Let us know and we will get back to you once we fix the issue.
     moduleInfo = JSON.stringify({url:window.ELopts.widget_url})
     $s(elements.side_btn)
       .stylize(
-              position:"fixed"
-              top: "20%"
-              left: "0"
-              width: "90px"
-              height: "90px"
-              background: "url(//i.imgur.com/jxoB4das.png)"
-              textIndent: "-9999px"
-              boxShadow: "2px 1px 4px #ccc"
-              borderRadius: "5px"
+        position:"fixed"
+        top: "20%"
+        left: "0"
+        width: "90px"
+        height: "90px"
+        background: "url(https://i.imgur.com/jxoB4das.png)"
+        textIndent: "-9999px"
+        boxShadow: "2px 1px 4px #ccc"
+        borderRadius: "5px"
       )
     $s(elements.side_btn).on "click", (event)=> 
       loadModule({data:moduleInfo})
@@ -168,10 +502,10 @@ Let us know and we will get back to you once we fix the issue.
   # ---- addWidget Method
   # -- we add the iframe widget to the element specified when initializing the plugin
   addWidget= ()->
-    url = window.ELopts.domain+"?id="+window.ELopts.widget_url+"?theme=#{window.ELopts.theme}"
-    widget_iframe_html = '<iframe id="iframe_widget" src="'+url+'" class="iframe-class" style="width:100%;height:100%;" frameborder="0" allowtransparency="true"></iframe>'
+    url = window.ELopts.widget_domain+"?id="+window.ELopts.widget_url+"&theme=#{window.ELopts.theme}"
+    widget_iframe_html = '<iframe id="iframe_widget" src="'+url+'" class="iframe-class" style="width:100%;height:100%;position:fixed;top:0;left:0" frameborder="0" allowtransparency="true"></iframe>'
     $el = $s(window.ELopts.widget_container)
-    $el.html(widget_iframe_html)  
+    $el.append(widget_iframe_html)  
 
   # ---- isMobile Method
   # -- check if the browser is a mobile browser
@@ -191,6 +525,11 @@ Let us know and we will get back to you once we fix the issue.
       # Sets the HTML
       html: (content) ->
         elem.innerHTML = content
+        fas
+
+      # Adds a class name
+      clazz: (clazz) ->
+        elem.className += clazz
         fas
 
       # Applies a set of styles to an element
@@ -284,6 +623,35 @@ Let us know and we will get back to you once we fix the issue.
   error = (s) ->
     window.console.error "widgetLoader: " + s  if window["console"] isnt `undefined`
 
+  addReporterrorListeners = () -> 
+    onSubmitComplete = (error) ->
+      contactResponse = document.getElementById('contact-response')
+      contactForm.clazz('submited');
+      contactBtn.disabled = false;
+      if error
+        contactResponse.innerHTML = '<div class="state-error">Sorry. Could not submit the error report.</div>'
+      else
+        contactResponse.innerHTML = '<div class="state-success">Thanks for submitting your error report!</div>'
+      return
+
+    contactForm = $s('#contact-form')
+    contactBtn = $s('#btn-submit')
+    contactBtn.on 'click',(e)=>
+      e.preventDefault()
+      myFirebaseRef = new Firebase('https://epiclogger.firebaseio.com/errors')
+      id = window.ELopts.widget_url
+      currentdate = new Date
+      datetime = currentdate.getDate() + '/' + currentdate.getMonth() + 1 + '/' + currentdate.getFullYear() + ' @ ' + currentdate.getHours() + ':' + currentdate.getMinutes() + ':' + currentdate.getSeconds()
+      myFirebaseRef.push {
+        'id': id
+        'email': contactForm.InputEmail.value
+        'notes': contactForm.InputMessage.value
+        'timestamp': datetime
+      }, onSubmitComplete
+      contactBtn.disabled = true
+      fasle
+    return
+
   # A function for easily displaying a modal with the given content
   (options) ->
     window.ELopts = make().extend({}, defaults,options)
@@ -302,31 +670,3 @@ window.onload = ()->
   if _lopts.widget_container is undefined
     _lopts.widget_container = 'body'
   widgetLoader(_lopts)
-
-window.reporterror = (formObj) ->
-
-  onSubmitComplete = (error) ->
-    contactForm = document.getElementById('contact-form')
-    contactResponse = document.getElementById('contact-response')
-    contactBtn = document.getElementById('btn-submit')
-    contactBtn.disabled = false
-    if error
-      contactResponse.innerHTML = '<div class="alert alert-danger">Sorry. Could not submit the error report.</div>'
-    else
-      contactResponse.innerHTML = '<div class="alert alert-success">Thanks for submitting your error report!</div>'
-      contactForm.style.display = 'none'
-    return
-
-  contactBtn = document.getElementById('btn-submit')
-  myFirebaseRef = new Firebase('https://epiclogger.firebaseio.com/errors')
-  id = window.ELopts.widget_url
-  currentdate = new Date
-  datetime = currentdate.getDate() + '/' + currentdate.getMonth() + 1 + '/' + currentdate.getFullYear() + ' @ ' + currentdate.getHours() + ':' + currentdate.getMinutes() + ':' + currentdate.getSeconds()
-  myFirebaseRef.push {
-    'id': id
-    'email': formObj.InputEmail.value
-    'notes': formObj.InputMessage.value
-    'timestamp': datetime
-  }, onSubmitComplete
-  contactBtn.disabled = true
-  false
